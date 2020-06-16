@@ -3,7 +3,7 @@ import { isEmpty, uniqBy, sortBy } from 'lodash'
 import GitHubSelectors         from 'src/lib/GitHubSelectors'
 import Storage                 from 'src/lib/Storage'
 
-import { Label, User }         from 'src/models'
+import { Label, User, Issue }         from 'src/models'
 import { memoize, show, hide } from 'src/utils'
 
 /* eslint-disable class-methods-use-this */
@@ -72,6 +72,13 @@ class ProjectBoard {
     labels = sortBy(labels, [label => label.val.toLowerCase()])
 
     return labels
+  }
+
+  get issues() {
+    let issues =  this.cards.map(card => Issue.fromIssueElement(card)).filter(card => card)
+    issues = sortBy(issues, [issue => issue.val.toLowerCase()])
+
+    return issues
   }
 
   async init() {
