@@ -1,11 +1,12 @@
 import App     from 'src/lib/App'
 import Session from 'src/lib/Session'
 
-import { fooLabel, cachedUser } from 'test/fixtures'
+import { fooLabel, cachedUser, fooIssue } from 'test/fixtures'
 
 import {
   Label,
   User,
+  Issue,
 } from 'src/models'
 
 describe('Session', () => {
@@ -54,6 +55,20 @@ describe('Session', () => {
         Object.entries(hydratedLabel).toString(),
       ).toEqual(
         Object.entries(fooLabel).toString(),
+      )
+    })
+
+    it('returns hydrated Issues', () => {
+      const hydratedIssue = Session.deserialize(JSON.stringify({
+        __constructor__: fooIssue.CACHE_KEY,
+        ...fooIssue,
+      }))
+
+      expect(hydratedIssue).toBeInstanceOf(Issue)
+      expect(
+        Object.entries(hydratedIssue).toString(),
+      ).toEqual(
+        Object.entries(fooIssue).toString(),
       )
     })
 
