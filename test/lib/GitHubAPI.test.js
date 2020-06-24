@@ -29,6 +29,16 @@ describe('GitHubAPI', () => {
       expect(data).toBe('foo bar!')
     })
 
+    it('adds an Accept header for a specific API to the request', async () => {
+      mock.onGet('https://api.github.com/foo/bar').replyOnce(200, 'foo bar!')
+
+      await GitHubAPI.query('foo/bar')
+
+      expect(axios.get).toHaveBeenCalledWith(expect.anything(), {
+        headers: { Accept: 'application/vnd.github.mockingbird-preview' },
+      })
+    })
+
     it('adds an authToken to the request if we have one set', async () => {
       Storage.set({ githubToken: 'abc123' })
       mock.onGet('https://api.github.com/foo/bar').replyOnce(200, 'foo bar!')
@@ -36,7 +46,10 @@ describe('GitHubAPI', () => {
       await GitHubAPI.query('foo/bar')
 
       expect(axios.get).toHaveBeenCalledWith(expect.anything(), {
-        headers: { Authorization: 'token abc123' },
+        headers: {
+          Accept: 'application/vnd.github.mockingbird-preview',
+          Authorization: 'token abc123',
+        },
       })
     })
 

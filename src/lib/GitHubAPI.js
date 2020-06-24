@@ -22,11 +22,20 @@ class GitHubAPI {
   async query(endpoint) {
     if (this.isTimedOut) throw new Error('API calls are timed out because we encountered an error')
 
-    const requestOptions = {}
+    const requestOptions = {
+      headers: {
+        Accept: 'application/vnd.github.mockingbird-preview',
+      },
+    }
     let response
 
     const authToken = await Storage.get('githubToken')
-    if (authToken) requestOptions.headers = { Authorization: `token ${authToken}` }
+    if (authToken) {
+      requestOptions.headers = {
+        ...requestOptions.headers,
+        Authorization: `token ${authToken}`,
+      }
+    }
 
     try {
       response = await axios.get(`${GitHubAPI.url}/${endpoint}`, requestOptions)
@@ -39,6 +48,10 @@ class GitHubAPI {
   }
 
   getUser = user => this.query(`users/${user}`)
+
+  getTimeline(repo, issueId) {
+    return this.query(`repos/${repo}/issues/${issueId}/timeline`)
+  }
 
   timeOutApiCalls() {
     if (this.isTimedOut) return

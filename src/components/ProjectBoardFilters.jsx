@@ -2,7 +2,7 @@ import React from 'react'
 
 import ProjectBoard from 'src/lib/ProjectBoard'
 
-import { show, hide } from 'src/utils'
+import { show, hide, asyncEvery } from 'src/utils'
 
 import {
   AssigneeFilter,
@@ -14,8 +14,8 @@ import {
 
 export default class ProjectBoardFilters extends React.Component {
   static filterItems(items, itemFilters) {
-    items.forEach((item) => {
-      const shouldShowItem = itemFilters.every(showsItem => showsItem(item))
+    items.forEach(async (item) => {
+      const shouldShowItem = await asyncEvery(itemFilters, async showsItem => showsItem(item))
 
       shouldShowItem ? show(item) : hide(item)
     })
