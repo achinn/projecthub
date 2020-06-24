@@ -6,8 +6,13 @@ import { Issue }    from 'src/models'
 import SelectButton from 'components/SelectButton'
 import BaseFilter   from 'components/Filters/BaseFilter'
 
+import {
+  colorRed, colorOrange, colorYellow, colorWhite, colorBlack,
+} from 'src/utils'
 
-export default class IssueFilter extends BaseFilter {
+import GitHubAPI from 'src/lib/GitHubAPI'
+
+export default class ParentFilter extends BaseFilter {
   static CACHE_KEY = 'issue-filter'
 
   static ALL_ISSUES = { id: '@all',       val: 'All'       }
@@ -20,7 +25,7 @@ export default class IssueFilter extends BaseFilter {
   }
 
   static defaultState = {
-    selectedIssue: IssueFilter.ALL_ISSUES,
+    selectedIssue: ParentFilter.ALL_ISSUES,
   }
 
   onChange = (issue) => {
@@ -29,26 +34,49 @@ export default class IssueFilter extends BaseFilter {
     }, this.props.onChange)
   }
 
-  shouldDisplayCard(card) {
+  async shouldDisplayCard(card) {
     const issue = Issue.fromIssueElement(card)
 
     if (!issue) {
       return false
     }
 
-    switch (this.state.selectedIssue.id) {
-      case IssueFilter.ALL_ISSUES.id:
-        return true
-
-      default:
-        return issue.id === this.state.selectedIssue.id ||
-          issue.titleTokens.some(token => token.includes(this.state.selectedIssue.issueId))
+    if (this.state.selectedIssue.id === ParentFilter.ALL_ISSUES.id) {
+      colorWhite(card)
+      return true
     }
+
+    const show = issue.id === this.state.selectedIssue.id ||
+      issue.titleTokens.some(token => token.includes(this.state.selectedIssue.issueId))
+
+    if (show) {
+      const timeline = await GitHubAPI.getTimeline(issue.repo, issue.issueId)
+      const latestMoveDate = timeline
+        .filter(ev => ev.event === 'moved_columns_in_project')
+        .map(ev => new Date(ev.created_at))
+        .reduce((latestDate, date) => (date > latestDate ? date : latestDate))
+      const now = new Date()
+      const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24
+      const daysDiff = Math.ceil(Math.abs(now.getTime() - latestMoveDate.getTime()) /
+        MILLISECONDS_PER_DAY)
+
+      if (daysDiff > 7) {
+        colorBlack(card)
+      } else if (daysDiff > 4) {
+        colorRed(card)
+      } else if (daysDiff > 2) {
+        colorOrange(card)
+      } else if (daysDiff > 1) {
+        colorYellow(card)
+      }
+    }
+
+    return show
   }
 
   render() {
     const issueOptions = [
-      IssueFilter.ALL_ISSUES,
+      ParentFilter.ALL_ISSUES,
       ...this.props.issues,
     ]
 
