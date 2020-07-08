@@ -74,13 +74,6 @@ class ProjectBoard {
     return labels
   }
 
-  get issues() {
-    let issues =  this.cards.map(card => Issue.fromIssueElement(card)).filter(card => card)
-    issues = sortBy(issues, [issue => issue.val.toLowerCase()])
-
-    return issues
-  }
-
   async init() {
     await this.afterLoaded
 

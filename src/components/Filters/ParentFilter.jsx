@@ -3,7 +3,8 @@ import PropTypes    from 'prop-types'
 
 import { Issue }    from 'src/models'
 
-import SelectButton from 'components/SelectButton'
+import ProjectBoard from 'src/lib/ProjectBoard'
+
 import BaseFilter   from 'components/Filters/BaseFilter'
 
 import {
@@ -20,12 +21,28 @@ export default class ParentFilter extends BaseFilter {
   static propTypes = {
     ...BaseFilter.propTypes,
 
-    issues:   PropTypes.arrayOf(PropTypes.instanceOf(Issue)),
     onChange: PropTypes.func.isRequired,
   }
 
   static defaultState = {
     selectedIssue: ParentFilter.ALL_ISSUES,
+  }
+
+  constructor(props) {
+    super(props)
+
+    ProjectBoard.afterLoaded.then(() => {
+      ProjectBoard.cards.forEach((card) => {
+        card.addEventListener('dblclick', () => {
+          const doubleClickedIssue = Issue.fromIssueElement(card)
+          if (doubleClickedIssue.id === this.state.selectedIssue.id) {
+            this.onChange(ParentFilter.ALL_ISSUES)
+          } else {
+            this.onChange(doubleClickedIssue)
+          }
+        })
+      })
+    })
   }
 
   onChange = (issue) => {
@@ -75,19 +92,9 @@ export default class ParentFilter extends BaseFilter {
   }
 
   render() {
-    const issueOptions = [
-      ParentFilter.ALL_ISSUES,
-      ...this.props.issues,
-    ]
-
     return (
-      <SelectButton
-        className="mr-2"
-        type="Issue"
-        options={issueOptions}
-        onChange={this.onChange}
-        initialSelection={this.state.selectedIssue}
-      />
+      <>
+      </>
     )
   }
 }
