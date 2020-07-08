@@ -5,7 +5,6 @@ import { Issue }    from 'src/models'
 
 import ProjectBoard from 'src/lib/ProjectBoard'
 
-import SelectButton from 'components/SelectButton'
 import BaseFilter   from 'components/Filters/BaseFilter'
 
 import {
@@ -22,7 +21,6 @@ export default class ParentFilter extends BaseFilter {
   static propTypes = {
     ...BaseFilter.propTypes,
 
-    issues:   PropTypes.arrayOf(PropTypes.instanceOf(Issue)),
     onChange: PropTypes.func.isRequired,
   }
 
@@ -94,19 +92,9 @@ export default class ParentFilter extends BaseFilter {
   }
 
   render() {
-    const issueOptions = [
-      ParentFilter.ALL_ISSUES,
-      ...this.props.issues,
-    ]
-
     return (
-      <SelectButton
-        className="mr-2"
-        type="Issue"
-        options={issueOptions}
-        onChange={this.onChange}
-        initialSelection={this.state.selectedIssue}
-      />
+      <>
+      </>
     )
   }
 }
