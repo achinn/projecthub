@@ -11,8 +11,6 @@ import {
   colorRed, colorOrange, colorYellow, colorWhite, colorBlack,
 } from 'src/utils'
 
-import GitHubAPI from 'src/lib/GitHubAPI'
-
 export default class ParentFilter extends BaseFilter {
   static CACHE_KEY = 'issue-filter'
 
@@ -67,16 +65,7 @@ export default class ParentFilter extends BaseFilter {
       issue.titleTokens.some(token => token.includes(this.state.selectedIssue.issueId))
 
     if (show) {
-      const timeline = await GitHubAPI.getTimeline(issue.repo, issue.issueId)
-      const latestMoveDate = timeline
-        .filter(ev => ev.event === 'moved_columns_in_project')
-        .map(ev => new Date(ev.created_at))
-        .reduce((latestDate, date) => (date > latestDate ? date : latestDate))
-      const now = new Date()
-      const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24
-      const daysDiff = Math.ceil(Math.abs(now.getTime() - latestMoveDate.getTime()) /
-        MILLISECONDS_PER_DAY)
-
+      const daysDiff = await issue.numberOfDaysInColumn()
       if (daysDiff > 7) {
         colorBlack(card)
       } else if (daysDiff > 4) {
