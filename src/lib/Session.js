@@ -4,8 +4,9 @@ import {
   BaseModel,
   Label,
   User,
+  Issue,
+  Column,
 } from 'src/models'
-import Issue from '../models/Issue'
 
 
 const Session = {
@@ -24,6 +25,8 @@ const Session = {
           return new User(val)
         case Issue.CACHE_KEY:
           return new Issue(val)
+        case Column.CACHE_KEY:
+          return new Column(val)
 
         default:
           throw new Error(`Don’t know how to deserialize ${val[BaseModel.SERIALIZE_KEY]}`)

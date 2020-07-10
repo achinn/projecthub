@@ -1,7 +1,7 @@
 const BG_COLORS = Object.freeze([
   'bg-red',
   'bg-yellow',
-  'bg-orange',
+  'bg-yellow-dark',
   'bg-white',
   'bg-gray-dark',
 ])
