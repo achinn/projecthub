@@ -9,6 +9,7 @@ import {
   LabelFilter,
   FocusFilter,
   ParentFilter,
+  ColumnFilter,
 } from 'components/Filters'
 
 
@@ -92,6 +93,11 @@ export default class ProjectBoardFilters extends React.Component {
           onChange={this.onFiltersChanged}
         />
         <ParentFilter
+          addCardsFilter={this.onCardsFilterAdded}
+          addColumnsFilter={this.onColumnsFilterAdded}
+          onChange={this.onFiltersChanged}
+        />
+        <ColumnFilter
           addCardsFilter={this.onCardsFilterAdded}
           addColumnsFilter={this.onColumnsFilterAdded}
           onChange={this.onFiltersChanged}

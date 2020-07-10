@@ -1,7 +1,7 @@
 import React        from 'react'
 import PropTypes    from 'prop-types'
 
-import { Issue }    from 'src/models'
+import { Column, Issue }    from 'src/models'
 
 import ProjectBoard from 'src/lib/ProjectBoard'
 
@@ -11,10 +11,10 @@ import {
   colorRed, colorOrange, colorYellow, colorWhite, colorBlack,
 } from 'src/utils'
 
-export default class ParentFilter extends BaseFilter {
-  static CACHE_KEY = 'issue-filter'
+export default class ColumnFilter extends BaseFilter {
+  static CACHE_KEY = 'column-filter'
 
-  static ALL_ISSUES = { id: '@all',       val: 'All'       }
+  static ALL = { id: '@all',       val: 'All'       }
 
   static propTypes = {
     ...BaseFilter.propTypes,
@@ -23,7 +23,7 @@ export default class ParentFilter extends BaseFilter {
   }
 
   static defaultState = {
-    selectedIssue: ParentFilter.ALL_ISSUES,
+    selectedColumn: ColumnFilter.ALL,
     visibleIssueIds: [],
   }
 
@@ -31,43 +31,44 @@ export default class ParentFilter extends BaseFilter {
     super(props)
 
     ProjectBoard.afterLoaded.then(() => {
-      ProjectBoard.cards.forEach((card) => {
-        card.addEventListener('dblclick', (ev) => {
-          const doubleClickedIssue = Issue.fromIssueElement(card)
-          if (doubleClickedIssue.id === this.state.selectedIssue.id) {
+      ProjectBoard.columns.forEach((column) => {
+        column.addEventListener('dblclick', () => {
+          const doubleClickedColumn = Column.fromColumnElement(column)
+          if (doubleClickedColumn.id === this.state.selectedColumn.id) {
             this.setState({
-              selectedIssue: ParentFilter.ALL_ISSUES,
+              selectedColumn: ColumnFilter.ALL,
             }, this.props.onChange)
           } else {
             this.setState({
-              selectedIssue: doubleClickedIssue,
+              selectedColumn: doubleClickedColumn,
             }, this.props.onChange)
           }
-          ev.stopPropagation()
         })
       })
     })
   }
 
+  shouldDisplayColumn(column) {
+    if (this.state.selectedColumn.id === ColumnFilter.ALL.id ||
+        this.state.selectedColumn.id === Column.fromColumnElement(column).id) {
+      return true
+    }
+    return false
+  }
+
   async shouldDisplayCard(card) {
     const issue = Issue.fromIssueElement(card)
 
-    if (!issue) {
+    if (!issue || (this.state.selectedColumn.id !== ColumnFilter.ALL.id && issue.columnId !== this.state.selectedColumn.id)) {
       return false
     }
 
-    if (this.state.selectedIssue.id === ParentFilter.ALL_ISSUES.id) {
+    if (this.state.selectedColumn.id === ColumnFilter.ALL.id) {
       if (this.state.visibleIssueIds.includes(issue.id)) {
         colorWhite(card)
         this.setState(prevState => ({ visibleIssueIds: prevState.visibleIssueIds.filter(id => id !== issue.id) }))
       }
-      return true
-    }
-
-    const show = issue.id === this.state.selectedIssue.id ||
-      issue.titleTokens.some(token => token.includes(this.state.selectedIssue.issueId))
-
-    if (show) {
+    } else {
       const daysDiff = await issue.numberOfDaysInColumn()
       if (daysDiff > 7) {
         colorBlack(card)
@@ -78,11 +79,10 @@ export default class ParentFilter extends BaseFilter {
       } else if (daysDiff > 1) {
         colorYellow(card)
       }
-
       this.setState(prevState => ({ visibleIssueIds: [...prevState.visibleIssueIds, issue.id] }))
     }
 
-    return show
+    return true
   }
 
   render() {
