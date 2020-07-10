@@ -19,7 +19,7 @@ class GitHubAPI {
     this.isTimedOut = false
   }
 
-  async query(endpoint) {
+  async queryUrl(url, includeResponseHeaders = false) {
     if (this.isTimedOut) throw new Error('API calls are timed out because we encountered an error')
 
     const requestOptions = {
@@ -38,19 +38,39 @@ class GitHubAPI {
     }
 
     try {
-      response = await axios.get(`${GitHubAPI.url}/${endpoint}`, requestOptions)
+      response = await axios.get(url, requestOptions)
     } catch (error) {
       this.handleError(error)
       throw error
     }
 
-    return response.data
+    return includeResponseHeaders ?
+      { headers: response.headers, data: response.data } : response.data
+  }
+
+  async query(endpoint, includeResponseHeaders = false) {
+    return this.queryUrl(`${GitHubAPI.url}/${endpoint}`, includeResponseHeaders)
   }
 
   getUser = user => this.query(`users/${user}`)
 
-  getTimeline(repo, issueId) {
-    return this.query(`repos/${repo}/issues/${issueId}/timeline`)
+  async getTimeline(repo, issueId) {
+    const response = await this.query(`repos/${repo}/issues/${issueId}/timeline`, true)
+
+    const getNextPage = async (headers, data) => {
+      if (headers && headers.link) {
+        let link = headers.link.split(', ').map(x => x.split('; ')).filter(x => x[1] === 'rel="next"')
+        if (link.length > 0) {
+          link = link[0][0]
+          link = link.slice(1, link.length - 1)
+          const innerResponse = await this.queryUrl(link, true)
+          return data.concat(await getNextPage(innerResponse.headers, innerResponse.data))
+        }
+      }
+      return data
+    }
+
+    return getNextPage(response.headers, response.data)
   }
 
   timeOutApiCalls() {
