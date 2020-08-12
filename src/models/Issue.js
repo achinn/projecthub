@@ -23,7 +23,9 @@ export default class Issue extends BaseModel {
     })
   }
 
-  constructor({ repo, issueId, titleTokens, columnId }) {
+  constructor({
+    repo, issueId, titleTokens, columnId,
+  }) {
     super()
 
     this.repo = repo

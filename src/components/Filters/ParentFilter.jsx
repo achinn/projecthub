@@ -59,7 +59,11 @@ export default class ParentFilter extends BaseFilter {
     if (this.state.selectedIssue.id === ParentFilter.ALL_ISSUES.id) {
       if (this.state.visibleIssueIds.includes(issue.id)) {
         colorWhite(card)
-        this.setState(prevState => ({ visibleIssueIds: prevState.visibleIssueIds.filter(id => id !== issue.id) }))
+        this.setState(
+          prevState => (
+            { visibleIssueIds: prevState.visibleIssueIds.filter(id => id !== issue.id) }
+          ),
+        )
       }
       return true
     }

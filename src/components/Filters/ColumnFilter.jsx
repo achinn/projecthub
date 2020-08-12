@@ -59,14 +59,20 @@ export default class ColumnFilter extends BaseFilter {
   async shouldDisplayCard(card) {
     const issue = Issue.fromIssueElement(card)
 
-    if (!issue || (this.state.selectedColumn.id !== ColumnFilter.ALL.id && issue.columnId !== this.state.selectedColumn.id)) {
+    if (!issue ||
+      (this.state.selectedColumn.id !== ColumnFilter.ALL.id &&
+        issue.columnId !== this.state.selectedColumn.id)) {
       return false
     }
 
     if (this.state.selectedColumn.id === ColumnFilter.ALL.id) {
       if (this.state.visibleIssueIds.includes(issue.id)) {
         colorWhite(card)
-        this.setState(prevState => ({ visibleIssueIds: prevState.visibleIssueIds.filter(id => id !== issue.id) }))
+        this.setState(
+          prevState => (
+            { visibleIssueIds: prevState.visibleIssueIds.filter(id => id !== issue.id) }
+          ),
+        )
       }
     } else {
       const daysDiff = await issue.numberOfDaysInColumn()
